@@ -1,134 +1,100 @@
-import { useQuery } from "@tanstack/react-query";
+import React from "react";
 import HeroBanner from "@/components/HeroBanner";
 import TournamentCard from "@/components/TournamentCard";
 import HowItWorks from "@/components/HowItWorks";
 import RecentWinners from "@/components/RecentWinners";
-import { Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const Home = () => {
-  // Get live tournaments
-  const { data: liveTournaments, isLoading: isLoadingLive } = useQuery({
-    queryKey: ["/api/tournaments/live"],
-    staleTime: 60000, // 1 minute
-  });
+interface Tournament {
+  id: number;
+  name: string;
+  entryFee: string;
+  prizePool: string;
+  totalSlots: number;
+  startTime: string;
+  endTime: string;
+  participants: any[];
+}
 
-  // Get upcoming tournaments
-  const { data: upcomingTournaments, isLoading: isLoadingUpcoming } = useQuery({
-    queryKey: ["/api/tournaments/upcoming"],
-    staleTime: 60000, // 1 minute
-  });
+const dummyTournaments: Tournament[] = [
+  {
+    id: 1,
+    name: "General Knowledge Showdown",
+    entryFee: "50",
+    prizePool: "1000",
+    totalSlots: 100,
+    startTime: new Date(Date.now() + 3600 * 1000).toISOString(),
+    endTime: new Date(Date.now() + 7200 * 1000).toISOString(),
+    participants: Array(45),
+  },
+  {
+    id: 2,
+    name: "Sports Trivia Bash",
+    entryFee: "100",
+    prizePool: "2000",
+    totalSlots: 150,
+    startTime: new Date(Date.now() + 86400 * 1000).toISOString(),
+    endTime: new Date(Date.now() + 90000 * 1000).toISOString(),
+    participants: Array(87),
+  },
+];
+
+const Home = () => {
+  const liveTournaments = dummyTournaments.filter(
+    (t) => new Date(t.startTime) <= new Date() && new Date(t.endTime) > new Date()
+  );
+  const upcomingTournaments = dummyTournaments.filter(
+    (t) => new Date(t.startTime) > new Date()
+  );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div>
       <HeroBanner />
 
-      {/* Live Tournaments */}
-      <div className="mb-12">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold font-heading">Live Tournaments</h2>
-          <Link href="/tournaments">
-            <a className="text-primary font-medium hover:underline">View All</a>
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {isLoadingLive ? (
-            // Loading skeletons
-            Array.from({ length: 3 }).map((_, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
-                <div className="relative">
-                  <Skeleton className="w-full h-48" />
-                </div>
-                <div className="p-5">
-                  <div className="flex justify-between mb-2">
-                    <Skeleton className="h-6 w-2/3" />
-                    <Skeleton className="h-6 w-16 rounded-full" />
-                  </div>
-                  <div className="flex justify-between text-sm text-gray-600 mb-4">
-                    <Skeleton className="h-4 w-28" />
-                    <Skeleton className="h-4 w-28" />
-                  </div>
-                  <Skeleton className="h-2 w-full mb-2" />
-                  <div className="flex justify-between mb-4">
-                    <Skeleton className="h-4 w-20" />
-                    <Skeleton className="h-4 w-20" />
-                  </div>
-                  <Skeleton className="h-10 w-full" />
-                </div>
-              </div>
-            ))
-          ) : liveTournaments && liveTournaments.length > 0 ? (
-            liveTournaments.slice(0, 3).map((tournament: any) => (
+      <section className="py-10 px-4 max-w-6xl mx-auto">
+        <h2 className="text-2xl font-bold mb-4">Live Tournaments</h2>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {liveTournaments.length > 0 ? (
+            liveTournaments.slice(0, 3).map((tournament) => (
               <TournamentCard
                 key={tournament.id}
                 tournament={tournament}
-                participantsCount={Math.floor(Math.random() * tournament.totalSlots)} // This should come from API
+                participantsCount={tournament.participants.length}
                 isLive={true}
               />
             ))
           ) : (
-            <div className="col-span-3 text-center py-10">
-              <p className="text-gray-500">No live tournaments at the moment. Check back soon!</p>
-            </div>
+            <>
+              <Skeleton className="h-64 w-full rounded-lg" />
+              <Skeleton className="h-64 w-full rounded-lg" />
+              <Skeleton className="h-64 w-full rounded-lg" />
+            </>
           )}
         </div>
-      </div>
+      </section>
 
-      {/* Upcoming Tournaments */}
-      <div className="mb-12">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold font-heading">Upcoming Tournaments</h2>
-          <Link href="/tournaments">
-            <a className="text-primary font-medium hover:underline">View All</a>
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {isLoadingUpcoming ? (
-            // Loading skeletons
-            Array.from({ length: 3 }).map((_, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
-                <div className="relative">
-                  <Skeleton className="w-full h-48" />
-                </div>
-                <div className="p-5">
-                  <div className="flex justify-between mb-2">
-                    <Skeleton className="h-6 w-2/3" />
-                    <Skeleton className="h-6 w-16 rounded-full" />
-                  </div>
-                  <div className="flex justify-between text-sm text-gray-600 mb-4">
-                    <Skeleton className="h-4 w-28" />
-                    <Skeleton className="h-4 w-28" />
-                  </div>
-                  <Skeleton className="h-2 w-full mb-2" />
-                  <div className="flex justify-between mb-4">
-                    <Skeleton className="h-4 w-20" />
-                    <Skeleton className="h-4 w-20" />
-                  </div>
-                  <Skeleton className="h-10 w-full" />
-                </div>
-              </div>
-            ))
-          ) : upcomingTournaments && upcomingTournaments.length > 0 ? (
-            upcomingTournaments.slice(0, 3).map((tournament: any) => (
+      <section className="py-10 px-4 max-w-6xl mx-auto">
+        <h2 className="text-2xl font-bold mb-4">Upcoming Tournaments</h2>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {upcomingTournaments.length > 0 ? (
+            upcomingTournaments.slice(0, 3).map((tournament) => (
               <TournamentCard
                 key={tournament.id}
                 tournament={tournament}
-                participantsCount={Math.floor(Math.random() * (tournament.totalSlots / 2))} // This should come from API
-                isLive={false}
+                participantsCount={tournament.participants.length}
               />
             ))
           ) : (
-            <div className="col-span-3 text-center py-10">
-              <p className="text-gray-500">No upcoming tournaments at the moment. Check back soon!</p>
-            </div>
+            <>
+              <Skeleton className="h-64 w-full rounded-lg" />
+              <Skeleton className="h-64 w-full rounded-lg" />
+              <Skeleton className="h-64 w-full rounded-lg" />
+            </>
           )}
         </div>
-      </div>
+      </section>
 
-      {/* How It Works */}
       <HowItWorks />
-
-      {/* Recent Winners */}
       <RecentWinners />
     </div>
   );
